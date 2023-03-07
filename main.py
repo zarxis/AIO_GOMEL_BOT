@@ -1,7 +1,8 @@
 import logging
 import sqlite3
 
-import sql
+from scripts import sql
+from scripts import weather_py
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
@@ -9,7 +10,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-import weather_py
 from config import TOKEN
 
 storage = MemoryStorage()
@@ -52,7 +52,7 @@ async def is_start(message: types.Message):
     await get_user(message)
 
 
-# ----------------------------------------------------------
+# --------------------Погода--------------------------------
 @dp.message_handler(commands=['weather'])
 async def is_start(message: types.Message):
     await message.answer('Введите название города')
@@ -70,6 +70,7 @@ async def get_city_name(message: types.Message, state: FSMContext):
 # ----------------------------------------------------------
 
 
+# --------------------Фильтр--------------------------------
 @dp.message_handler(commands='to_filter')
 async def add_to_db(message: types.Message):
     await message.answer('Видимо вы хотите добавить одно из плохих слов.')
@@ -88,6 +89,7 @@ async def to_db(message: types.Message, state: FSMContext):
         if sqlite3.Error:
             await message.answer('Упс, что-то не так...')
             await message.answer(sqlite3.Error)
+# ----------------------------------------------------------
 
 
 if __name__ == '__main__':
