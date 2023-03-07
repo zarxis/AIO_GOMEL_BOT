@@ -34,8 +34,8 @@ def KeyB() -> ReplyKeyboardMarkup:
 @dp.message_handler(commands=['start'])
 async def is_start(message: types.Message):
     await message.answer('Привет! '
-                         'этот бот может подсказать тебе погоду, '
-                         'или посчитать как часто ты материшься в чатах:)',
+                         'этот бот может подсказать тебе погоду! ',
+                         #'или посчитать как часто ты материшься в чатах:)',
                          reply_markup=KeyB())
 
     async def get_user(message: types.Message):
