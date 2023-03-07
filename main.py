@@ -1,4 +1,6 @@
 import logging
+import sqlite3
+
 import sql
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -77,10 +79,14 @@ async def add_to_db(message: types.Message):
 async def to_db(message: types.Message, state:FSMContext):
     await state.update_data(f_name=message.text)
     Fdata = await state.get_data()
-    await message.answer(f"Введите пожалуйста ваше слово.")
     await state.finish()
-    sql.db_CON_WORD.INSERT(message.text)
-    await message.answer("Слово добавлено!")
+    try:
+        sql.db_CON_WORD.INSERT(message.text)
+        await message.answer("Слово добавлено!")
+    except:
+        if sqlite3.Error:
+            await message.answer('Упс, что-то не так...')
+            await message.answer(sqlite3.Error)
 
 
 if __name__ == '__main__':
