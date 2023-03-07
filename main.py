@@ -10,7 +10,6 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 import weather_py
-from weather_py import GetWeather
 from config import TOKEN
 
 storage = MemoryStorage()
@@ -33,11 +32,12 @@ def KeyB() -> ReplyKeyboardMarkup:
 
 
 @dp.message_handler(commands=['start'])
-async def is_start(message: types.Message) -> str:
+async def is_start(message: types.Message):
     await message.answer('Привет! '
                          'этот бот может подсказать тебе погоду, '
                          'или посчитать как часто ты материшься в чатах:)',
                          reply_markup=KeyB())
+
     async def get_user(message: types.Message):
         try:
             u_reg = message.from_user.id
@@ -48,13 +48,13 @@ async def is_start(message: types.Message) -> str:
             await message.answer('Поздравляю, теперь ты зарегестрирован :)')
         except:
             await message.answer(message)
-    await get_user(message)
 
+    await get_user(message)
 
 
 # ----------------------------------------------------------
 @dp.message_handler(commands=['weather'])
-async def is_start(message: types.Message) -> str:
+async def is_start(message: types.Message):
     await message.answer('Введите название города')
     await StateMachine.city_name.set()
 
@@ -75,8 +75,9 @@ async def add_to_db(message: types.Message):
     await message.answer('Видимо вы хотите добавить одно из плохих слов.')
     await StateMachine.filter_name.set()
 
+
 @dp.message_handler(state=StateMachine.filter_name)
-async def to_db(message: types.Message, state:FSMContext):
+async def to_db(message: types.Message, state: FSMContext):
     await state.update_data(f_name=message.text)
     Fdata = await state.get_data()
     await state.finish()
