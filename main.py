@@ -20,15 +20,13 @@ logging.basicConfig(level=logging.INFO)
 
 class StateMachine(StatesGroup):
     city_name = State()
-    weather_state = State()
-    city_weather = State()
-    description_weather = State()
+    filter_name = State()
 
 
 def KeyB() -> ReplyKeyboardMarkup:
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add(KeyboardButton('weather'),
-           KeyboardButton('to filter'))
+    kb.add(KeyboardButton('/weather'),
+           KeyboardButton('/to_filter'))
     return kb
 
 
@@ -69,6 +67,20 @@ async def get_city_name(message: types.Message, state: FSMContext):
     await weather_py.GetWeather(message)
 # ----------------------------------------------------------
 
+
+@dp.message_handler(commands='to_filter')
+async def add_to_db(message: types.Message):
+    await message.answer('Видимо вы хотите добавить одно из плохих слов.')
+    await StateMachine.filter_name.set()
+
+@dp.message_handler(state=StateMachine.filter_name)
+async def to_db(message: types.Message, state:FSMContext):
+    await state.update_data(f_name=message.text)
+    Fdata = await state.get_data()
+    await message.answer(f"Введите пожалуйста ваше слово.")
+    await state.finish()
+    sql.db_CON_WORD.INSERT(message.text)
+    await message.answer("Слово добавлено!")
 
 
 if __name__ == '__main__':
