@@ -81,11 +81,10 @@ async def get_city_name(message: types.Message, state: FSMContext):
         time.sleep(0.3)
     """
     await weather_py.GetWeather(message)
-
-
 # ----------------------------------------------------------
 
 
+# --------------------TEST----------------------------------
 @dp.message_handler(commands='update')
 async def update_to(message: types.Message):
     await message.answer('сейчас посчитаем...')
@@ -99,12 +98,13 @@ async def update_DB(message: types.Message, state: FSMContext):
     while True:
         TEST_SQL.db_CON_WORD.TAKE_WORD()
         words = TEST_SQL.db_CON_WORD.TAKE_WORD()
+# ----------------------------------------------------------
 
 
 # --------------------Фильтр--------------------------------
 @dp.message_handler(commands='to_filter')
 async def add_to_db(message: types.Message):
-    await message.answer('Видимо вы хотите добавить одно из плохих слов.')
+    await message.answer('Видимо вы хотите добавить одно из плохих слов. \n Введите его:)')
     await StateMachine.filter_name.set()
 
 
