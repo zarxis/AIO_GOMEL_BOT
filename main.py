@@ -3,14 +3,15 @@ import logging
 import mysql
 from mysql import connector
 
+from scripts import KeyBoard
 from scripts import TEST_SQL
 from scripts import weather_py
+from scripts import States
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from config import TOKEN
 
@@ -21,25 +22,12 @@ dp = Dispatcher(bot, storage=storage)
 logging.basicConfig(level=logging.INFO)
 
 
-class StateMachine(StatesGroup):
-    city_name = State()
-    filter_name = State()
-    update_Stat = State()
-
-
-def KeyB() -> ReplyKeyboardMarkup:
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add(KeyboardButton('/weather'),
-           KeyboardButton('/to_filter'))
-    return kb
-
-
 @dp.message_handler(commands=['start'])
 async def is_start(message: types.Message):
     await message.answer('Привет! '
                          'этот бот может подсказать тебе погоду! ',
                          # 'или посчитать как часто ты материшься в чатах:)',
-                         reply_markup=KeyB())
+                         reply_markup=KeyBoard.KeyB())
 
     async def get_user(message: types.Message):
         try:
@@ -56,8 +44,6 @@ async def is_start(message: types.Message):
             await message.answer("Кажется вы уже зарегистрированы!")
         except mysql.connector.Error:
             await message.answer("Пожалуйста, перешлите следующие сообщение мне! @Glen_Lex ")
-            await message.answer(mysql.connector.errors)
-            await message.answer(mysql.connector.Error)
 
     await get_user(message)
 
@@ -66,14 +52,13 @@ async def is_start(message: types.Message):
 @dp.message_handler(commands=['weather'])
 async def is_start(message: types.Message):
     await message.answer('Введите название города')
-    await StateMachine.city_name.set()
+    await States.StateMachine.city_name.set()
 
 
-@dp.message_handler(state=StateMachine.city_name)
+@dp.message_handler(state=States.StateMachine.city_name)
 async def get_city_name(message: types.Message, state: FSMContext):
-    await state.update_data(c_name=message.text)
-    # если остановить просто message можно увидеть подробную информацию о сообщение!
-    data = await state.get_data()
+    await state.update_data(c_name=message.text)  # если остановить просто
+    # message можно увидеть подробную информацию о сообщение!
     await state.finish()
     """
     while 1:
@@ -81,23 +66,8 @@ async def get_city_name(message: types.Message, state: FSMContext):
         time.sleep(0.3)
     """
     await weather_py.GetWeather(message)
-# ----------------------------------------------------------
 
 
-# --------------------TEST----------------------------------
-@dp.message_handler(commands='update')
-async def update_to(message: types.Message):
-    await message.answer('сейчас посчитаем...')
-    await StateMachine.update_Stat.set()
-
-
-@dp.message_handler(state=StateMachine.update_Stat)
-async def update_DB(message: types.Message, state: FSMContext):
-    await state.update_data(f_name=message.text)
-    await state.finish()
-    while True:
-        TEST_SQL.db_CON_WORD.TAKE_WORD()
-        words = TEST_SQL.db_CON_WORD.TAKE_WORD()
 # ----------------------------------------------------------
 
 
@@ -105,16 +75,17 @@ async def update_DB(message: types.Message, state: FSMContext):
 @dp.message_handler(commands='to_filter')
 async def add_to_db(message: types.Message):
     await message.answer('Видимо вы хотите добавить одно из плохих слов. \n Введите его:)')
-    await StateMachine.filter_name.set()
+    await States.StateMachine.filter_name.set()
 
 
-@dp.message_handler(state=StateMachine.filter_name)
+@dp.message_handler(state=States.StateMachine.filter_name)
 async def to_db(message: types.Message, state: FSMContext):
     await state.update_data(f_name=message.text)
     # Fdata = await state.get_data()
     TEST_SQL.db_CON_WORD.INSERT(message.text)
     await message.answer("Слово добавлено!")
     await state.finish()
+
 
 # ----------------------------------------------------------
 
